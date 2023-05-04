@@ -57,3 +57,5 @@ __pycache__
 felix-cache*
 *.??#
 =*
+
+cython_bez2018.*
