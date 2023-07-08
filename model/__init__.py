@@ -22,7 +22,7 @@ def call_model(sound_data):
         num_cf=3500,
         min_cf=20,
         max_cf=16e3,
-        num_spikes_per_train=NUM_SPIKE_TRAINS_LIST,
+        num_spike_trains_list=NUM_SPIKE_TRAINS_LIST,
         implnt=1, # 0 = approximate, 1 = actual Power Law
 
         # What is returned
