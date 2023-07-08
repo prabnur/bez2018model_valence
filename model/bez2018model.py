@@ -1,7 +1,6 @@
 import cython_bez2018 # Package must be installed in-place: `python setup.py build_ext --inplace`
 import numpy as np
 import scipy.signal
-import pdb
 
 
 def get_ERB_cf_list(num_cf, min_cf=125.0, max_cf=8e3):
@@ -139,6 +138,7 @@ def run_ANmodel(pin,
                 synapseMode=0,
                 max_spikes_per_train=1000,
                 num_spike_trains=40,
+                num_spike_trains_list=None,
                 return_vihcs=True,
                 return_meanrates=True,
                 return_spike_times=True,
@@ -182,6 +182,8 @@ def run_ANmodel(pin,
             cihc=cihc[cf_idx],
             IhcLowPass_cutoff=IhcLowPass_cutoff,
             IhcLowPass_order=IhcLowPass_order)
+        if num_spike_trains_list is not None:
+            num_spike_trains = num_spike_trains_list[cf_idx]
         # Run IHC-ANF synapse model
         synapse_out = cython_bez2018.run_anf(
             vihc,
@@ -234,6 +236,7 @@ def nervegram(signal,
               synapseMode=0,
               max_spikes_per_train=1000,
               num_spike_trains=40,
+              num_spike_trains_list=None,
               cohc=1.0,
               cihc=1.0,
               IhcLowPass_cutoff=3e3,
@@ -276,6 +279,7 @@ def nervegram(signal,
     synapseMode (float): set to 1 to re-run synapse model for each spike train (0 to re-use synout)
     max_spikes_per_train (int): max array size for spike times output
     num_spike_trains (int): number of spike trains to sample from spike generator
+    num_spike_trains_list (None or list): if not None, overrides `num_spike_trains` for each CF
     cohc (float or list): OHC scaling factor: 1=normal OHC function, 0=complete OHC dysfunction
     cihc (float or list): IHC scaling factor: 1=normal IHC function, 0=complete IHC dysfunction
     IhcLowPass_cutoff (float): cutoff frequency for IHC lowpass filter (Hz)
@@ -328,6 +332,11 @@ def nervegram(signal,
     msg = "cf_list and cihc must have the same length"
     assert len(cf_list) == len(cihc), msg
 
+    # Variable Num Spike Trains
+    msg = "num_spike_trains_list and cf_list must have the same length"
+    assert num_spike_trains_list is None or len(num_spike_trains_list) == len(cf_list)
+
+
     # ============ RESAMPLE AND RESCALE INPUT SIGNAL ============ #
     # Resample the input signal to pin_fs (at least 100kHz) for ANmodel
     pin = scipy.signal.resample_poly(signal, int(pin_fs), int(signal_fs))
@@ -370,6 +379,7 @@ def nervegram(signal,
             synapseMode=synapseMode,
             max_spikes_per_train=max_spikes_per_train,
             num_spike_trains=num_spike_trains,
+            num_spike_trains_list=num_spike_trains_list,
             return_vihcs=return_vihcs,
             return_meanrates=return_meanrates,
             return_spike_times=return_spike_times,
