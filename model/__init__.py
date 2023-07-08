@@ -1,5 +1,5 @@
 from .bez2018model import nervegram
-# import .cython_bez2018
+from .num_spike_trains import NUM_SPIKE_TRAINS_LIST
 import numpy as np
 
 def call_model(sound_data):
@@ -7,7 +7,6 @@ def call_model(sound_data):
 
     # get data
     input_signal_fs, input_signal = sound_data
-    num_spike_trains_list = generate_num_spike_trains(3500)
 
     result = nervegram(
         input_signal,
@@ -23,7 +22,7 @@ def call_model(sound_data):
         num_cf=3500,
         min_cf=20,
         max_cf=16e3,
-        num_spikes_per_train=num_spike_trains_list,
+        num_spikes_per_train=NUM_SPIKE_TRAINS_LIST,
         implnt=1, # 0 = approximate, 1 = actual Power Law
 
         # What is returned
@@ -35,15 +34,3 @@ def call_model(sound_data):
     )
     return result["nervegram_spike_times"]
 
-def generate_num_spike_trains(num_cf):
-    def generate_poisson(low, high, lam, size=1):
-        while True:
-            sample = np.random.poisson(lam, size)
-            if low <= sample <= high:
-                return sample[0]
-
-    size = num_cf  # Number of samples you want
-    low, high = 10, 20  # The range
-    lam = 15  # lambda
-
-    return [generate_poisson(low, high, lam) for _ in range(size)]
