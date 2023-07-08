@@ -3,7 +3,7 @@ from Cython.Build import cythonize
 
 import numpy
 
-include_dirs = []
+include_dirs = ["model"]
 include_dirs.append(numpy.get_include())
 
 extensions = []

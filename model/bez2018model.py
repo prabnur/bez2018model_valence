@@ -1,4 +1,4 @@
-import cython_bez2018 # Package must be installed in-place: `python setup.py build_ext --inplace`
+from model.cython_bez2018 import run_ihc, run_anf # Package must be installed in-place: `python setup.py build_ext --inplace`
 import numpy as np
 import scipy.signal
 
@@ -172,7 +172,7 @@ def run_ANmodel(pin,
     # Iterate over all CFs and run the auditory nerve model components
     for cf_idx, cf in enumerate(cf_list):
         # Run IHC model
-        vihc = cython_bez2018.run_ihc(
+        vihc = run_ihc(
             pin,
             pin_fs,
             cf,
@@ -185,7 +185,7 @@ def run_ANmodel(pin,
         if num_spike_trains_list is not None:
             num_spike_trains = num_spike_trains_list[cf_idx]
         # Run IHC-ANF synapse model
-        synapse_out = cython_bez2018.run_anf(
+        synapse_out = run_anf(
             vihc,
             pin_fs,
             cf,
