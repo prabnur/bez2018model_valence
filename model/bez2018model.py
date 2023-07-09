@@ -1,6 +1,7 @@
 from model.cython_bez2018 import run_ihc, run_anf # Package must be installed in-place: `python setup.py build_ext --inplace`
 import numpy as np
 import scipy.signal
+from tqdm import tqdm
 
 
 def get_ERB_cf_list(num_cf, min_cf=125.0, max_cf=8e3):
@@ -170,7 +171,9 @@ def run_ANmodel(pin,
         # (analytical estimates of instantaneous firing rates are computed on first AN model run)
         num_spike_trains = 1
     # Iterate over all CFs and run the auditory nerve model components
-    for cf_idx, cf in enumerate(cf_list):
+    # for cf_idx, cf in enumerate(cf_list):
+    for cf_idx in tqdm(range(len(cf_list))):
+        cf = cf_list[cf_idx]
         # Run IHC model
         vihc = run_ihc(
             pin,
@@ -445,7 +448,11 @@ def nervegram(signal,
                 sr='timestamps',
                 axis=None)
     if squeeze_spont_dim and np.ndim(spont) == 0:
-        nervegram_meanrates = np.squeeze(nervegram_meanrates, axis=-2)
+        try:
+            nervegram_meanrates = np.squeeze(nervegram_meanrates, axis=-2)
+        except ValueError:
+            print("nervegram_meanrates cannot be squeezed")
+            print(nervegram_meanrates)
         if any([return_spike_times,
                 return_spike_tensor_sparse,
                 return_spike_tensor_sparse,
