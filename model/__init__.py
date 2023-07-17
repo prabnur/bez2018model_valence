@@ -1,7 +1,8 @@
 import os
-from .bez2018model import nervegram
+from .bez2018model import nervegram, get_ERB_cf_list
 from scipy.io import wavfile 
 import numpy as np
+from tqdm import tqdm
 
 NOTES_DIR = "../Iowa Notes/Mono"
 SPIKES_DIR = "./spikes/mono"
@@ -13,36 +14,51 @@ def generate_spikes(sound_data, duration=0.25):
     input_signal_fs, input_signal = sound_data
     input_signal = input_signal[:int(duration*input_signal_fs)]
 
-    result = nervegram(
-        input_signal,
-        input_signal_fs,
-
-        # Params worth changing
-        synapseMode=1, # 0 = less computation
-        max_spikes_per_train=200,
-        nervegram_fs=20e3,
-
-        # Params not worth changing
-        species=2, # Human (Shera et al. 2002)
+    cf_list = get_ERB_cf_list(
         num_cf=3500,
         min_cf=125,
         max_cf=16e3,
-        implnt=1, # 0 = approximate, 1 = actual Power Law
-
-        # What is returned
-        return_vihcs=False,
-        return_meanrates=False,
-        return_spike_times=True,
-        return_spike_tensor_sparse=False,
-        return_spike_tensor_dense=False,
     )
-    return result["nervegram_spike_times"]
+    sponts = np.load("./model/sponts.npy")
+    assert(len(sponts) == len(cf_list), "Sponts and CF list must be the same length")
 
+    final_spike_times=[]
+
+    for i in tqdm(range(len(cf_list))):
+        cf = cf_list[i]
+        spont = sponts[i]
+
+        result = nervegram(
+            input_signal,
+            input_signal_fs,
+
+            # Params worth changing
+            max_spikes_per_train=200,
+            nervegram_fs=20e3,
+
+            # Params not worth changing
+            synapseMode=1, # 0 = less computation
+            species=2, # Human (Shera et al. 2002)
+            cf_list=[cf],
+            spont=spont,
+            implnt=1, # 0 = approximate, 1 = actual Power Law
+
+            # What is returned
+            return_vihcs=False,
+            return_meanrates=False,
+            return_spike_times=True,
+            return_spike_tensor_sparse=False,
+            return_spike_tensor_dense=False,
+        )
+        spikes = result["nervegram_spike_times"][0][0]
+        final_spike_times.append(spikes)
+    return np.array(final_spike_times)
 
 def save_spikes(note):
     sound_data = wavfile.read(os.path.join(NOTES_DIR, f"{note}.wav"))
     spike_times = generate_spikes(sound_data)
-    np.save(os.path.join(SPIKES_DIR, f"{note}.npy"), spike_times)
+    print(np.shape(spike_times))
+    # np.save(os.path.join(SPIKES_DIR, f"{note}.npy"), spike_times)
 
 def sharp_to_flat(sharp_note):
     # Mapping of sharp notes to flat notes
