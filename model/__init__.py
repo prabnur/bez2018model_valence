@@ -1,6 +1,5 @@
 import os
 from .bez2018model import nervegram
-# from .num_spike_trains import NUM_SPIKE_TRAINS_LIST
 from scipy.io import wavfile 
 import numpy as np
 
@@ -28,8 +27,6 @@ def generate_spikes(sound_data, duration=0.25):
         num_cf=3500,
         min_cf=125,
         max_cf=16e3,
-        # num_spike_trains_list=NUM_SPIKE_TRAINS_LIST,
-        num_spike_trains=15,
         implnt=1, # 0 = approximate, 1 = actual Power Law
 
         # What is returned
