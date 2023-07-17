@@ -1,3 +1,5 @@
-from model import save_spikes
+from model import generate_scale
 
-save_spikes("C4")
+generate_scale(4)
+generate_scale(3)
+# generate_scale(5)

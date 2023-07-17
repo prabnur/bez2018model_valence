@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from model.cython_bez2018 import run_ihc, run_anf # Package must be installed in-place: `python setup.py build_ext --inplace`
 import numpy as np
 import scipy.signal
@@ -132,6 +133,7 @@ def run_ANmodel(pin,
                 noiseType=1,
                 implnt=0,
                 spont=70.0,
+                spont_list=None,
                 tabs=6e-4,
                 trel=6e-4,
                 synapseMode=0,
@@ -170,7 +172,8 @@ def run_ANmodel(pin,
         num_spike_trains = 1
     # Iterate over all CFs and run the auditory nerve model components
     # for cf_idx, cf in enumerate(cf_list):
-    for cf_idx, cf in enumerate(cf_list):
+    for cf_idx in tqdm(range(len(cf_list))):
+        cf = cf_list[cf_idx]
         # Run IHC model
         vihc = run_ihc(
             pin,
@@ -182,8 +185,13 @@ def run_ANmodel(pin,
             cihc=cihc[cf_idx],
             IhcLowPass_cutoff=IhcLowPass_cutoff,
             IhcLowPass_order=IhcLowPass_order)
+        
+        # Diverged code from forked repo here
         if num_spike_trains_list is not None:
             num_spike_trains = num_spike_trains_list[cf_idx]
+        if spont_list is not None:
+            list_spont = spont_list[cf_idx]
+
         # Run IHC-ANF synapse model
         synapse_out = run_anf(
             vihc,
@@ -242,6 +250,7 @@ def nervegram(signal,
               IhcLowPass_cutoff=3e3,
               IhcLowPass_order=7,
               spont=70.0,
+              spont_list=None,
               noiseType=1,
               implnt=0,
               tabs=6e-4,
@@ -374,6 +383,7 @@ def nervegram(signal,
             noiseType=noiseType,
             implnt=implnt,
             spont=spont,
+            spont_list=spont_list,
             tabs=tabs,
             trel=trel,
             synapseMode=synapseMode,
