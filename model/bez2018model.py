@@ -205,13 +205,14 @@ def run_ANmodel(pin,
             synapseMode=synapseMode,
             max_spikes_per_train=max_spikes_per_train,
             num_spike_trains=num_spike_trains)
-        if return_vihcs:
-            tmp_vihc = scipy.signal.resample_poly(vihc, int(nervegram_fs), int(pin_fs))
-            nervegram_vihcs.append(tmp_vihc)
-        if return_meanrates:
-            tmp_meanrate = scipy.signal.resample_poly(synapse_out['list_meanrate'], int(nervegram_fs), int(pin_fs))
-            tmp_meanrate[tmp_meanrate < 0] = 0
-            nervegram_meanrates.append(tmp_meanrate)
+        # Not used so commented out for now
+        # if return_vihcs:
+        #     tmp_vihc = scipy.signal.resample_poly(vihc, int(nervegram_fs), int(pin_fs))
+        #     nervegram_vihcs.append(tmp_vihc)
+        # if return_meanrates:
+        #     tmp_meanrate = scipy.signal.resample_poly(synapse_out['list_meanrate'], int(nervegram_fs), int(pin_fs))
+        #     tmp_meanrate[tmp_meanrate < 0] = 0
+        #     nervegram_meanrates.append(tmp_meanrate)
         if any([return_spike_times, return_spike_tensor_sparse, return_spike_tensor_dense]):
             tmp_spike_times = synapse_out['list_spike_times']
             nervegram_spike_times.append(tmp_spike_times)
