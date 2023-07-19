@@ -1,4 +1,3 @@
-from tqdm import tqdm
 from model.cython_bez2018 import run_ihc, run_anf # Package must be installed in-place: `python setup.py build_ext --inplace`
 import numpy as np
 import scipy.signal
@@ -172,7 +171,7 @@ def run_ANmodel(pin,
         num_spike_trains = 1
     # Iterate over all CFs and run the auditory nerve model components
     # for cf_idx, cf in enumerate(cf_list):
-    for cf_idx in tqdm(range(len(cf_list))):
+    for cf_idx in range(len(cf_list)):
         cf = cf_list[cf_idx]
         # Run IHC model
         vihc = run_ihc(
