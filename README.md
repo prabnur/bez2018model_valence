@@ -28,8 +28,9 @@ numpy                1.16.3
 scipy                1.4.1
 
 (1) clone bez2018model_valence repository
-(2) cd model
-(3) python setup.py build_ext --inplace
+(2) pip install -r requirements.txt
+(3) cd model
+(4) python setup.py build_ext --inplace
 ```
 
 

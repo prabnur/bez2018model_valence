@@ -1,0 +1,5 @@
+Cython==0.29.33
+matplotlib==3.6.2
+numpy==1.24.1
+scipy==1.9.1
+tqdm==4.64.1
