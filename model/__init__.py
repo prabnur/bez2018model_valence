@@ -7,6 +7,34 @@ from multiprocessing import Pool, cpu_count
 NOTES_DIR = "../Iowa Notes/Mono"
 SPIKES_DIR = "./spikes/mono"
 
+def generate(args):
+    cf, spont, input_signal_fs, input_signal = args
+    print(f"Generating spikes for CF: {cf}")
+    result = nervegram(
+        input_signal,
+        input_signal_fs,
+
+        # Params worth changing
+        max_spikes_per_train=200,
+        nervegram_fs=20e3,
+
+        # Params not worth changing
+        synapseMode=1, # 0 = less computation
+        species=2, # Human (Shera et al. 2002)
+        cf_list=[cf],
+        spont=spont,
+        implnt=1, # 0 = approximate, 1 = actual Power Law
+
+        # What is returned
+        return_vihcs=False,
+        return_meanrates=False,
+        return_spike_times=True,
+        return_spike_tensor_sparse=False,
+        return_spike_tensor_dense=False,
+    )
+    print(f"Generated spikes for CF: {cf}")
+    return result["nervegram_spike_times"][0][0]
+
 def generate_spikes(sound_data, duration=0.25):
     np.random.seed(711)
 
@@ -16,33 +44,10 @@ def generate_spikes(sound_data, duration=0.25):
 
     cf_list = get_ERB_cf_list(num_cf=3500, min_cf=125, max_cf=16e3)
     sponts = np.load("./model/sponts.npy")
-    Args = [(cf_list[i], sponts[i]) for i in range(len(cf_list))]
-
-    def generate(arg):
-        cf, spont = arg
-        result = nervegram(
-            input_signal,
-            input_signal_fs,
-
-            # Params worth changing
-            max_spikes_per_train=200,
-            nervegram_fs=20e3,
-
-            # Params not worth changing
-            synapseMode=1, # 0 = less computation
-            species=2, # Human (Shera et al. 2002)
-            cf_list=[cf],
-            spont=spont,
-            implnt=1, # 0 = approximate, 1 = actual Power Law
-
-            # What is returned
-            return_vihcs=False,
-            return_meanrates=False,
-            return_spike_times=True,
-            return_spike_tensor_sparse=False,
-            return_spike_tensor_dense=False,
-        )
-        return result["nervegram_spike_times"][0][0]
+    Args = [
+        (cf_list[i], sponts[i], input_signal_fs, input_signal)
+            for i in range(len(cf_list))
+    ]
     
     num_cpu = max(os.cpu_count(), cpu_count())
     with Pool(processes=num_cpu) as pool:
@@ -53,6 +58,7 @@ def generate_spikes(sound_data, duration=0.25):
 def save_spikes(note):
     sound_data = wavfile.read(os.path.join(NOTES_DIR, f"{note}.wav"))
     spike_times = generate_spikes(sound_data)
+    print(np.shape(spike_times))
     np.save(os.path.join(SPIKES_DIR, f"{note}.npy"), spike_times)
 
 def sharp_to_flat(sharp_note):
