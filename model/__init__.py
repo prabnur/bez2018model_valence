@@ -7,23 +7,30 @@ from multiprocessing import Pool, cpu_count
 NOTES_DIR = "../Iowa Notes/Mono"
 SPIKES_DIR = "./spikes/mono"
 
-def generate(args):
-    cf, spont, input_signal_fs, input_signal = args
-    print(f"Generating spikes for CF: {cf}")
+
+def generate_spikes_sync(sound_data, duration=0.25):
+    np.random.seed(711)
+
+    # get data
+    input_signal_fs, input_signal = sound_data
+    input_signal = input_signal[:int(duration*input_signal_fs)]
+    sponts = np.load("./model/sponts.npy")
+
     result = nervegram(
         input_signal,
         input_signal_fs,
 
         # Params worth changing
-        max_spikes_per_train=200,
+        max_spikes_per_train=100,
         nervegram_fs=20e3,
 
         # Params not worth changing
         synapseMode=1, # 0 = less computation
         species=2, # Human (Shera et al. 2002)
-        cf_list=[cf],
-        spont=spont,
+        num_cf=3500, min_cf=125, max_cf=16e3,
+        spont_list=sponts,
         implnt=1, # 0 = approximate, 1 = actual Power Law
+        num_spike_trains=1,
 
         # What is returned
         return_vihcs=False,
@@ -32,33 +39,11 @@ def generate(args):
         return_spike_tensor_sparse=False,
         return_spike_tensor_dense=False,
     )
-    print(f"Generated spikes for CF: {cf}")
-    return result["nervegram_spike_times"][0][0]
-
-def generate_spikes(sound_data, duration=0.25):
-    np.random.seed(711)
-
-    # get data
-    input_signal_fs, input_signal = sound_data
-    input_signal = input_signal[:int(duration*input_signal_fs)]
-
-    cf_list = get_ERB_cf_list(num_cf=3500, min_cf=125, max_cf=16e3)
-    sponts = np.load("./model/sponts.npy")
-    Args = [
-        (cf_list[i], sponts[i], input_signal_fs, input_signal)
-            for i in range(len(cf_list))
-    ]
-    
-    num_cpu = max(os.cpu_count(), cpu_count())
-    with Pool(processes=num_cpu) as pool:
-        results = pool.map(generate, Args)
-    
-    return np.array(results)
+    return np.array(result["nervegram_spike_times"])
 
 def save_spikes(note):
     sound_data = wavfile.read(os.path.join(NOTES_DIR, f"{note}.wav"))
-    spike_times = generate_spikes(sound_data)
-    print(np.shape(spike_times))
+    spike_times = generate_spikes_sync(sound_data)
     np.save(os.path.join(SPIKES_DIR, f"{note}.npy"), spike_times)
 
 def sharp_to_flat(sharp_note):
@@ -88,7 +73,7 @@ def generate_scale(scale):
     ]
 
     for filename in os.listdir(NOTES_DIR):
-        if filename.endswith(".wav"):
+        if (filename.endswith(".wav") and (not filename.startswith("."))):
             note = filename.split(".")[0]
             if not (scale == int(note[-1])):
                 print(f"Skipping: {note}")

@@ -1,6 +1,7 @@
 from model.cython_bez2018 import run_ihc, run_anf # Package must be installed in-place: `python setup.py build_ext --inplace`
 import numpy as np
 import scipy.signal
+from tqdm import tqdm
 
 def get_ERB_cf_list(num_cf, min_cf=125.0, max_cf=8e3):
     '''
@@ -169,9 +170,10 @@ def run_ANmodel(pin,
         # It is needlessly inefficient to set num_spike_trains > 1 if spikes are not being returned
         # (analytical estimates of instantaneous firing rates are computed on first AN model run)
         num_spike_trains = 1
+    
     # Iterate over all CFs and run the auditory nerve model components
     # for cf_idx, cf in enumerate(cf_list):
-    for cf_idx in range(len(cf_list)):
+    for cf_idx in tqdm(range(len(cf_list))):
         cf = cf_list[cf_idx]
         # Run IHC model
         vihc = run_ihc(
@@ -464,16 +466,25 @@ def nervegram(signal,
                 return_spike_tensor_sparse,
                 return_spike_tensor_sparse,
                 return_spike_tensor_dense]):
-            nervegram_spike_times = np.squeeze(nervegram_spike_times, axis=-3)
+            try:
+                nervegram_spike_times = np.squeeze(nervegram_spike_times, axis=-3)
+            except ValueError:
+                print("nervegram_spike_times cannot be squeezed")
     if squeeze_channel_dim and len(signal.shape) == 1:
         pin = np.squeeze(pin, axis=-1)
-        nervegram_vihcs = np.squeeze(nervegram_vihcs, axis=-1)
-        nervegram_meanrates = np.squeeze(nervegram_meanrates, axis=-1)
+        try:
+            nervegram_vihcs = np.squeeze(nervegram_vihcs, axis=-1)
+            nervegram_meanrates = np.squeeze(nervegram_meanrates, axis=-1)
+        except ValueError:
+            print("nervegram_spike_times cannot be squeezed")
         if any([return_spike_times,
                 return_spike_tensor_sparse,
                 return_spike_tensor_sparse,
                 return_spike_tensor_dense]):
-            nervegram_spike_times = np.squeeze(nervegram_spike_times, axis=-2)
+            try:
+                nervegram_spike_times = np.squeeze(nervegram_spike_times, axis=-2)
+            except ValueError:
+                print("nervegram_spike_times cannot be squeezed")
 
     # Generate sparse representation of binary spike tensor from spike times
     if any([return_spike_tensor_sparse, return_spike_tensor_dense]):
