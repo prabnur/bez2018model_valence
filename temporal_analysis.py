@@ -1,8 +1,21 @@
 import numpy as np
 from model import get_spikes
 
-to_compare = ["C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4"]
-c_major_scale = ["C4", "D4", "E4", "F4", "G4", "A4", "B4"]
+to_compare = [
+    "C4",
+    "C5",
+    "G4",
+    "F4",
+    "E4",
+    "A4",
+    "D4",
+    "B4",
+    "Ab4",
+    "Eb4",
+    "Bb4",
+    "Gb4",
+    "Db4",
+]
 
 
 def calc_avg_isi(spike_times):
@@ -29,4 +42,4 @@ def get_avg_isi(spikes):
     eg
     shape(15, 3500, 200) -> [0.3, 0.4 ....] (len: 15*3500)
     """
-    return np.apply_along_axis(calc_avg_isi, 2, spikes).T.flatten()
+    return np.apply_along_axis(calc_avg_isi, 2, spikes).flatten()
