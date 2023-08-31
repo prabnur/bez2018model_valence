@@ -44,6 +44,9 @@ def generate_spikes_sync(sound_data, duration=0.25):
 def save_spikes(note):
     sound_data = wavfile.read(os.path.join(NOTES_DIR, f"{note}.wav"))
     spike_times = generate_spikes_sync(sound_data)
+    spike_times = spike_times[0]
+    if spike_times.shape != (3500,18,100):
+        print(f"ERROR: {note} has shape {spike_times.shape}")
     np.save(os.path.join(SPIKES_DIR, f"{note}.npy"), spike_times)
 
 def sharp_to_flat(sharp_note):

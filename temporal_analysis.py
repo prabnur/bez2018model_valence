@@ -1,5 +1,4 @@
 import numpy as np
-from model import get_spikes
 
 to_compare = [
     "C4",
