@@ -130,6 +130,8 @@ def generate_pure_tone(frequency, duration=0.25, sample_rate=44100):
 def save_spikes_tone(freq):
     tone = generate_pure_tone(freq)
     spike_times = generate_spikes_sync((44100, tone))
+    if spike_times.shape == (1, 3500,18,100):
+        spike_times = spike_times[0]
     if spike_times.shape != (3500,18,100):
         print(f"ERROR: {freq} tone spikes has shape {spike_times.shape}")
     np.save(os.path,join(TONE_SPIKES_DIR, f"{freq}.npy"), spike_times)
@@ -148,3 +150,7 @@ def get_tone_spikes(freq, attempts=0):
         
         save_spikes_tone(freq)
         return get_tone_spikes(freq, attempts + 1)
+
+def once():
+    spikes = np.load(os.path.join(TONE_SPIKES_DIR, "440.npy"))
+    np.save(os.path.join(TONE_SPIKES_DIR, "440.npy"), spikes[0])
