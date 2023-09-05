@@ -1,9 +1,6 @@
 import numpy as np
-from temporal_analysis import calc_avg_isi, get_avg_isi
-from spatial_analysis import count_spikes, count_spikes_optimized
-
-# import pytest  # noqa: F401
-
+from analysis.temporal import calc_avg_isi, get_avg_isi
+from analysis.spatial import count_spikes, count_spikes_optimized
 
 def test_temporal_analyis():
     # calc_avg_isi
@@ -34,3 +31,5 @@ def test_spatial_analysis():
         count_spikes_optimized(test_data), np.array([4, 5, 2, 1, 3, 0])
     )
 
+if __name__ == "__main__":
+    print("Usage: pytest tests.py")
