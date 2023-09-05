@@ -1,4 +1,6 @@
+from math import inf
 import os
+from shlex import join
 from .bez2018model import nervegram, get_ERB_cf_list
 from scipy.io import wavfile 
 import numpy as np
@@ -6,7 +8,20 @@ from multiprocessing import Pool, cpu_count
 
 NOTES_DIR = "../Iowa Notes/Mono"
 SPIKES_DIR = "./spikes/mono"
+TONE_SPIKES_DIR = "./spikes/tone"
 
+def normalize_to_range(array):
+    # Find the minimum and maximum values in the array
+    min_val = np.min(array)
+    max_val = np.max(array)
+    
+    # Handle the edge case where min_val == max_val
+    if min_val == max_val:
+        return np.zeros_like(array, dtype=float)
+    
+    # Normalize the array to the range [-1, 1]
+    normalized_array = 2 * (array - min_val) / (max_val - min_val) - 1
+    return normalized_array
 
 def generate_spikes_sync(sound_data, duration=0.25):
     np.random.seed(711)
@@ -15,6 +30,8 @@ def generate_spikes_sync(sound_data, duration=0.25):
     input_signal_fs, input_signal = sound_data
     input_signal = input_signal[:int(duration*input_signal_fs)]
     sponts = np.load("./model/sponts.npy")
+
+    input_signal = normalize_to_range(input_signal)
 
     result = nervegram(
         input_signal,
@@ -89,3 +106,45 @@ def generate_scale(scale):
 
     print(f"\nDONE WITH SCALE {scale}\n")
 
+def generate_pure_tone(frequency, duration=0.25, sample_rate=44100):
+    """
+    Generate a pure tone of a given frequency and duration.
+
+    Parameters:
+    - frequency (float): The frequency of the tone in Hz.
+    - duration (float): The duration of the tone in seconds.
+    - sample_rate (int): The sample rate in Hz. Default is 44100.
+
+    Returns:
+    - numpy.ndarray: A NumPy array containing the samples of the pure tone.
+    """
+    # Create an array of time values
+    t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
+
+    # Generate the samples using the sine function
+    samples = np.sin(2 * np.pi * frequency * t)
+    
+    return samples
+
+
+def save_spikes_tone(freq):
+    tone = generate_pure_tone(freq)
+    spike_times = generate_spikes_sync((44100, tone))
+    if spike_times.shape != (3500,18,100):
+        print(f"ERROR: {freq} tone spikes has shape {spike_times.shape}")
+    np.save(os.path,join(TONE_SPIKES_DIR, f"{freq}.npy"), spike_times)
+
+def get_tone_spikes(freq, attempts=0):
+    max_attempts = 3  # Maximum number of attempts
+    
+    try:
+        spikes = np.load(os.path.join(TONE_SPIKES_DIR, f"{freq}.npy"))
+        return spikes
+    
+    except OSError:
+        if attempts >= max_attempts:
+            print(f"Failed to get spikes for frequency {freq} after {max_attempts} attempts.")
+            return None
+        
+        save_spikes_tone(freq)
+        return get_tone_spikes(freq, attempts + 1)
