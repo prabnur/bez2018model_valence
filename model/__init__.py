@@ -1,14 +1,19 @@
+from fileinput import filename
 from math import inf
 import os
 from shlex import join
 from .bez2018model import nervegram, get_ERB_cf_list
 from scipy.io import wavfile 
 import numpy as np
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Pool
+from multiprocessing.dummy import Pool as ThreadPool
 
 NOTES_DIR = "../Iowa Notes/Mono"
 SPIKES_DIR = "./spikes/mono"
+SPIKES_ABS_DIR = "./spikes/mono/abs"
 TONE_SPIKES_DIR = "./spikes/tone"
+
+MAX_VAL = 2**15
 
 def normalize_to_range(array):
     # Find the minimum and maximum values in the array
@@ -23,6 +28,19 @@ def normalize_to_range(array):
     normalized_array = 2 * (array - min_val) / (max_val - min_val) - 1
     return normalized_array
 
+def normalize_absolute(array):
+    # Find the minimum and maximum values in the array
+    min_val = np.min(array)
+    max_val = np.max(array)
+    
+    # Handle the edge case where min_val == max_val
+    if min_val == max_val:
+        return np.zeros_like(array, dtype=float)
+    
+    # Normalize the array to the range [-1, 1]
+    normalized_array = array / MAX_VAL
+    return normalized_array
+
 def generate_spikes_sync(sound_data, duration=0.25):
     np.random.seed(711)
 
@@ -31,7 +49,8 @@ def generate_spikes_sync(sound_data, duration=0.25):
     input_signal = input_signal[:int(duration*input_signal_fs)]
     sponts = np.load("./model/sponts.npy")
 
-    input_signal = normalize_to_range(input_signal)
+    # input_signal = normalize_to_range(input_signal)
+    input_signal = normalize_absolute(input_signal)
 
     result = nervegram(
         input_signal,
@@ -64,7 +83,17 @@ def save_spikes(note):
     spike_times = spike_times[0]
     if spike_times.shape != (3500,18,100):
         print(f"ERROR: {note} has shape {spike_times.shape}")
-    np.save(os.path.join(SPIKES_DIR, f"{note}.npy"), spike_times)
+
+    path = os.path.join(SPIKES_ABS_DIR, f"{note}.npy")
+    # Extract the directory name from the file path
+    directory = os.path.dirname(path)
+    
+    # Create the directory recursively if it doesn't exist
+    if directory and not os.path.exists(directory):
+        os.makedirs(directory)
+    
+    # Save the numpy array to the path
+    np.save(path, spike_times)
 
 def sharp_to_flat(sharp_note):
     # Mapping of sharp notes to flat notes
@@ -85,10 +114,15 @@ def get_spikes(note):
         note = sharp_to_flat(note[:2]) + note[2:]
     return np.load(os.path.join(SPIKES_DIR, f"{note}.npy"))
 
+def get_spikes_abs(note):
+    if note[1] == "#":
+        note = sharp_to_flat(note[:2]) + note[2:]
+    return np.load(os.path.join(SPIKES_ABS_DIR, f"{note}.npy"))
+
 def generate_scale(scale):
     processed = [
         filename.split(".")[0] 
-            for filename in os.listdir(SPIKES_DIR)
+            for filename in os.listdir(SPIKES_ABS_DIR)
                 if filename.endswith(".npy")
     ]
 
@@ -134,7 +168,7 @@ def save_spikes_tone(freq):
         spike_times = spike_times[0]
     if spike_times.shape != (3500,18,100):
         print(f"ERROR: {freq} tone spikes has shape {spike_times.shape}")
-    np.save(os.path,join(TONE_SPIKES_DIR, f"{freq}.npy"), spike_times)
+    np.save(os.path.join(TONE_SPIKES_DIR, f"{freq}.npy"), spike_times)
 
 def get_tone_spikes(freq, attempts=0):
     max_attempts = 3  # Maximum number of attempts
@@ -151,6 +185,3 @@ def get_tone_spikes(freq, attempts=0):
         save_spikes_tone(freq)
         return get_tone_spikes(freq, attempts + 1)
 
-def once():
-    spikes = np.load(os.path.join(TONE_SPIKES_DIR, "440.npy"))
-    np.save(os.path.join(TONE_SPIKES_DIR, "440.npy"), spikes[0])

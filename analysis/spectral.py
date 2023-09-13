@@ -19,6 +19,7 @@ def plot_concurrency(conc_profiles, base=BASE):
     decoded = [decode(conc_prof, base) for conc_prof in conc_profiles]
     # Plot line chart cf_list on X axis and decoded on Y axis
 
+    plt.figure(figsize=(10, 5))
     plt.plot(cf_list, decoded)
     plt.xlabel("CF")
     plt.ylabel("Decoded")
@@ -31,9 +32,8 @@ def fourier_note(note, shouldPlot=False):
     sample_rate, read_data = wavfile.read(f'/Users/prab/Documents/Play/Iowa Notes/Mono/{note}.wav')
 
     # Normalize the data
-    read_data = read_data / np.max(np.abs(data))
-    data = read_data
-    fourier_transform(data, sample_rate, shouldPlot)
+    read_data = read_data / np.max(np.abs(read_data))
+    fourier_transform(read_data, sample_rate, shouldPlot)
 
 def fourier_transform(data, sample_rate, shouldPlot=False):
     # If the audio file has multiple channels (e.g., stereo), take one channel
