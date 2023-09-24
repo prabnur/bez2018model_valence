@@ -1,6 +1,8 @@
 import os
 import subprocess
 
+NOTES = ["C", "D", "E", "F", "G", "A", "B"]
+
 def process_files(input_dir, output_dir):
     # Check if the output directory exists, if not, create it
     if not os.path.exists(output_dir):
@@ -14,7 +16,9 @@ def process_files(input_dir, output_dir):
 
                 # Extract note from filename (assuming filename format like Piano.ff.Gb7.aiff)
                 note = file.split('.')[-3]
-
+                if not note[0] in NOTES:
+                    note = file.split('.')[-2]
+                
                 # Create the output file path
                 output_file_path = os.path.join(output_dir, f"{note}.wav")
 
