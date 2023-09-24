@@ -1,4 +1,3 @@
-from locale import normalize
 import matplotlib.pyplot as plt
 from model.bez2018model import get_ERB_cf_list
 import numpy as np
@@ -14,6 +13,9 @@ def decode(conc_prof, base=BASE):
         #     continue
         decoded += (base**(i+1))*count
     return decoded
+
+def decode_sum(conc_prof):
+    return np.sum(conc_prof)
 
 def plot_concurrency(conc_profiles, base=BASE):
     decoded = [decode(conc_prof, base) for conc_prof in conc_profiles]

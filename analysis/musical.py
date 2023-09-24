@@ -1,3 +1,6 @@
+from model import get_decoded_exp
+import numpy as np
+
 # URL=https://www.frontiersin.org/articles/10.3389/fpsyg.2013.00264      
 # DOI=10.3389/fpsyg.2013.00264
 CONSONANCE_ORDER = [
@@ -15,6 +18,23 @@ CONSONANCE_ORDER = [
     "M7", # Major 7th
     "m2", # Minor 2nd
 ]
+
+# From Schwartz et al. 2003
+CONS_RANK = [12, 11, 10, 9, 9, 8, 7, 6, 5, 5, 3, 2] # Same order as intervals above
+
+
+def consonance_field(note):
+    intervals = calculate_intervals(note)
+    notes = [intervals[interval] for interval in CONSONANCE_ORDER]
+
+    decoded = [get_decoded_exp(note) for note in notes]
+
+    mean = sum(CONS_RANK) / len(CONS_RANK)
+    factors = [(rank - mean) for rank in CONS_RANK]
+
+    factored = np.array([factor * note_decoded for factor, note_decoded in zip(factors, decoded)])
+    field = np.sum(factored, axis=0) / 12
+    return field
 
 def note_to_semitone(note):
     """Convert a note to its corresponding semitone value relative to C0."""
@@ -64,5 +84,3 @@ def calculate_intervals(root_note):
     
     return intervals
 
-# Test the function
-calculate_intervals("C4")
