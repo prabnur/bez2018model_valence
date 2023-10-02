@@ -2,7 +2,7 @@ import os
 import numpy as np
 from tqdm import tqdm
 from analysis.spectral import decode
-from model import SPIKES_DIR, save_spikes_rng, save_spikes
+from model import SPIKES_DIR, first_n_primes, save_spikes_rng, save_spikes
 from analysis.temporal import create_concurrency_profile
 
 # Stereo
@@ -22,7 +22,6 @@ def generate_decoded_exp():
     if directory and not os.path.exists(directory):
         os.makedirs(directory)
 
-
     for filename in tqdm(os.listdir(SPIKES_DIR)):
         if not filename.endswith(".npy"):
             continue
@@ -39,12 +38,16 @@ def generate_decoded_exp():
         name, _ = os.path.splitext(filename)
         # Save
         np.save(os.path.join(DECODED_DIR, name), decoded)
-        
 
 
 if __name__ == "__main__":
     # generate_scale(4)
     # save_spikes("C4")
-    save_spikes("C5", instrument="bells")
-    save_spikes("C5", instrument="flute")
-    save_spikes("C5", instrument="violin")
+    # save_spikes("C5", instrument="bells")
+    # save_spikes("C5", instrument="flute")
+    # save_spikes("C5", instrument="violin")
+    notes = ["C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4", "C5"]
+    seeds = first_n_primes(30)
+    for seed in seeds:
+        for note in notes:
+            save_spikes_rng(note, seed)
