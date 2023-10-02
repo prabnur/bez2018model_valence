@@ -3,42 +3,6 @@
 # from analysis.pulse import TAU, MAX
 
 
-# def consonance_scores(ranks=CONS_RANK, min_value=0.01, max_value=1, adjust_to_zero=False):
-#     """
-#     Return
-#     Args:
-#         ranks (_type_, optional): Consonance Ranks for the intervals. Defaults to CONS_RANK which is based off empirical data.
-#         min_value (int, optional): Minimum possible probability. Defaults to 0.01.
-#         max_value (int, optional): Maximum possible probability. Defaults to 1.
-#         adjust_to_zero (bool, optional): Make the sum 0. Defaults to False.
-
-#     Returns:
-#         _type_: np.array(dtype=float)
-#     """
-#     # Constants
-#     min_rank = 1
-#     max_rank = 12
-
-#     # 1. Invert the rank values
-#     inverted_ranks = [13 - rank for rank in ranks]
-
-#     # 2. Normalize to [0, 1]
-#     normalized_values = [(inv_rank - min_rank) / (max_rank - min_rank) for inv_rank in inverted_ranks]
-
-#     # 3. Rescale based on the given min_value and max_value
-#     range_diff = max_value - min_value
-#     rescaled_values = [min_value + (range_diff * norm_val) for norm_val in normalized_values]
-
-#     if adjust_to_zero:
-#         # 4. Adjust values to ensure their sum is 0
-#         avg_value = sum(rescaled_values) / len(rescaled_values)
-#         adjusted_values = np.array([val - avg_value for val in rescaled_values])
-
-#         return np.round(adjusted_values, 4)
-
-#     return np.round(rescaled_values, 4)
-
-
 # def generate_spike_tensor(spikes, tau=TAU, duration=MAX):
 #     round_factor = len("{:.10f}".format(tau).split('.')[1])
 #     rounded_spikes = np.round(spikes, round_factor)
