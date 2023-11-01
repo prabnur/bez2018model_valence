@@ -1,5 +1,5 @@
 import numpy as np
-from model import get_spikes
+from cache import get_spikes
 
 
 def count_spikes(spikes):

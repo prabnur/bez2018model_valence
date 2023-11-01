@@ -51,5 +51,5 @@ def generate_expectation(tensors, scores):
     for tensor, score in zip(tensors, scores):
         expectation += tensor * score
 
-    # expectation = expectation / len(spike_tensors)
+    # expectation = expectation / len(tensors)
     return expectation

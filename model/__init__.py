@@ -105,8 +105,7 @@ def save_spikes_rng(note, seed):
 
     file_location = os.path.join(RNG_SPIKES_DIR, note, f"{note}_{seed}.npy")
     if os.path.exists(file_location):
-        print(f"Skipping {note} {seed}")
-        return
+        return False
 
     print(f"Processing {note} {seed}")
 
@@ -116,6 +115,7 @@ def save_spikes_rng(note, seed):
         print(f"ERROR: {note} {seed} has shape {spike_times.shape}")
 
     save(file_location, spike_times)
+    return True
 
 
 def get_decoded_exp(note, normalize=True):

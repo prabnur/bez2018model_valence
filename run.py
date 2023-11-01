@@ -1,3 +1,7 @@
+from analysis.spike_tensor import generate_expectation, generate_snapshot, generate_spike_tensor
+from analysis.musical import consonance_ordered_notes, consonance_probabilities
+from cache import get_spikes
+import matplotlib.pyplot as plt
 import os
 import numpy as np
 from tqdm import tqdm
@@ -40,6 +44,9 @@ def generate_decoded_exp():
         np.save(os.path.join(DECODED_DIR, name), decoded)
 
 
+root_note = "C4"
+
+
 if __name__ == "__main__":
     # generate_scale(4)
     # save_spikes("C4")
@@ -48,6 +55,11 @@ if __name__ == "__main__":
     # save_spikes("C5", instrument="violin")
     notes = ["C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4", "C5"]
     seeds = first_n_primes(30)
+    count = 0
     for seed in seeds:
         for note in notes:
-            save_spikes_rng(note, seed)
+            didProcess = save_spikes_rng(note, seed)
+            if not didProcess:
+                count += 1
+            else:
+                print(f"Skipped {count} notes")
