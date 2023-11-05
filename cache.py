@@ -2,10 +2,14 @@ import numpy as np
 import os
 from scipy.io import wavfile
 
+REPO_PATH = "/Users/prabnurbal/Documents/bez2018model_valence"
+def abspath(path):
+    return os.path.join(REPO_PATH, path)
 
-NOTES_DIR = "../notes/Piano"
-SPIKES_DIR = "./spikes/piano/abs"
-RNG_SPIKES_DIR = "./spikes/piano/rng"
+NOTES_DIR = "/Users/prabnurbal/Documents/notes/Piano"
+SPIKES_DIR = abspath("spikes/piano/abs")
+RNG_SPIKES_DIR = abspath("spikes/piano/rng")
+TONE_SPIKES_DIR = abspath("/spikes/tone")
 
 
 def save(path, array):
