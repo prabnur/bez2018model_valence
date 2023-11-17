@@ -16,9 +16,8 @@ def normalize_to_range(array):
     if min_val == max_val:
         return np.zeros_like(array, dtype=float)
 
-    # Normalize the array to the range [-1, 1]
-    normalized_array = (2 * ((array - min_val) / (max_val - min_val))) - 1
-    return normalized_array
+    # Normalize the array to the range [-1, 1] and return it
+    return (2 * ((array - min_val) / (max_val - min_val))) - 1
 
 
 def normalize_absolute(array):
@@ -30,9 +29,7 @@ def normalize_absolute(array):
     if min_val == max_val:
         return np.zeros_like(array, dtype=float)
 
-    # Normalize the array to the range [-1, 1]
-    normalized_array = array / MAX_VAL
-    return normalized_array
+    return array / MAX_VAL
 
 
 def generate_spikes_sync(sound_data, duration=0.25, seed=711):
@@ -89,11 +86,7 @@ def first_n_primes(n):
     primes = []
     num = 2
     while len(primes) < n:
-        is_prime = True
-        for i in range(2, int(num ** 0.5) + 1):
-            if num % i == 0:
-                is_prime = False
-                break
+        is_prime = all(num % i != 0 for i in range(2, int(num ** 0.5) + 1))
         if is_prime:
             primes.append(num)
         num += 1
@@ -137,7 +130,7 @@ def generate_scale(scale):
     for filename in os.listdir(NOTES_DIR):
         if (filename.endswith(".wav") and (not filename.startswith("."))):
             note = filename.split(".")[0]
-            if not (scale == int(note[-1])):
+            if scale != int(note[-1]):
                 print(f"Skipping: {note}")
                 continue
             print(f"Processing: {note}")

@@ -3,13 +3,19 @@ import os
 from scipy.io import wavfile
 
 REPO_PATH = "/Users/prabnurbal/Documents/bez2018model_valence"
-def abspath(path):
-    return os.path.join(REPO_PATH, path)
+CACHED = "cached"
 
-NOTES_DIR = "/Users/prabnurbal/Documents/notes/Piano"
-SPIKES_DIR = abspath("spikes/piano/abs")
+
+def abspath(path):
+    return os.path.join(REPO_PATH, CACHED, path)
+
+
+SPIKES_DIR = abspath("spikes")
+NOTES_DIR = "/Users/prabnurbal/Documents/notes"
 RNG_SPIKES_DIR = abspath("spikes/piano/rng")
-TONE_SPIKES_DIR = abspath("/spikes/tone")
+TONE_SPIKES_DIR = abspath("spikes/tone")
+SNAPSHOT_DIR = abspath("snapshots/posneg")
+EXPECTATION_DIR = abspath("expectations/piano")
 
 
 def save(path, array):
@@ -46,18 +52,16 @@ def get_spikes(note, mode="regular", instrument="piano"):
     if mode == "regular":
         return np.load(os.path.join(f"./spikes/{instrument}", f"{note}.npy"))
     elif mode == "rng":
-        final = []
-        for filename in os.listdir(RNG_SPIKES_DIR):
-            if filename.startswith(note):
-                final.append(np.load(os.path.join(RNG_SPIKES_DIR, filename)))
-        return final
+        rng_path = os.path.join(SPIKES_DIR, instrument, "rng", note)
+        return [
+            np.load(os.path.join(rng_path, filename))
+            for filename in os.listdir(rng_path)
+            if filename.startswith(note)
+        ]
 
 
 def load_note_sound(note, instrument="piano"):
-    notes_dir = f"../notes/{instrument}"
-
     if note[1] == "#":
         note = sharp_to_flat(note[:2]) + note[2:]
 
-    sound_data = wavfile.read(os.path.join(notes_dir, f"{note}.wav"))
-    return sound_data
+    return wavfile.read(os.path.join(NOTES_DIR, instrument, f"{note}.wav"))

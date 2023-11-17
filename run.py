@@ -53,13 +53,12 @@ if __name__ == "__main__":
     # save_spikes("C5", instrument="bells")
     # save_spikes("C5", instrument="flute")
     # save_spikes("C5", instrument="violin")
-    notes = ["C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4", "C5"]
+    notes = ["C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4", "C5"]
     seeds = first_n_primes(30)
     count = 0
     for seed in seeds:
         for note in notes:
-            didProcess = save_spikes_rng(note, seed)
-            if not didProcess:
-                count += 1
-            else:
+            if didProcess := save_spikes_rng(note, seed):
                 print(f"Skipped {count} notes")
+            else:
+                count += 1

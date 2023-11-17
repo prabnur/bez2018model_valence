@@ -1,7 +1,7 @@
 import numpy as np
 from analysis.temporal import calc_avg_isi, get_avg_isi
 from analysis.spatial import count_spikes, count_spikes_optimized
-from analysis.spike_tensor import generate_snapshot, generate_spike_tensor
+from analysis.spike_tensor import generate_snapshot, generate_spike_tensor, generate_expectation
 from analysis.musical import note_to_semitone, semitone_to_note
 
 
@@ -71,39 +71,62 @@ def test_semitone_to_note():
 
 
 def test_spike_tensor():
+    # TENSOR Generation
     spikes = np.array([
         [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]],
         [[0.7, 0.8, 0.9], [0.7, 0.3, 0]],
     ])
-    expected_output = np.array([[[1, 1, 1, 0, 0, 0.],
-                                 [0, 0, 0, 1, 1, 1.]],
-                                [[0, 0, 0, 0, 0, 0.],
-                                 [0, 0, 1, 0, 0, 0.]]])
+    expected_output = np.array([
+        [[1, 1, 1, 0, 0, 0.],
+         [0, 0, 0, 1, 1, 1.]],
+        [[0, 0, 0, 0, 0, 0.],
+         [0, 0, 1, 0, 0, 0.]]
+    ])
     output = generate_spike_tensor(spikes, tau=0.1, duration=0.6)
     assert np.array_equal(output, expected_output)
 
-
-def test_snapshot():
+    # SNAPSHOT
     tensor = [[[0, 1, 0, 1], [1, 0, 0, 1]]]
     expectation = [[[0.1, 0.2, 0.3, 0.4], [0.5, 0.6, 0.7, 0.8]]]
-    output = np.array(generate_snapshot(tensor, expectation, snap_size=3))
-    expected_output = np.array([36667, 47500, 45000])
+    output = np.array([round(snap, 3) for snap in generate_snapshot(tensor, expectation, snap_size=3)])
+    expected_output = np.array([0.367, 0.475, 0.45])
     assert np.array_equal(output, expected_output)
 
     tensor = [[[0, 0, 0, 1, 0, 1, 0, 0, 0], [1, 0, 0, 1, 0, 0, 0, 0, 0]]]
     expectation = [[[0, 0, 0.1, 0.2, 0.3, 0.4, 0, 0, 0], [0.5, 0.6, 0.7, 0.8, 0, 0, 0, 0, 0]]]
-    output = np.array(generate_snapshot(tensor, expectation, snap_size=3))
-    expected_output = np.array([36667, 47500, 22500])
+    output = np.array([round(snap, 3) for snap in generate_snapshot(tensor, expectation, snap_size=3)])
+    expected_output = np.array([0.367, 0.475, 0.45])
     assert np.array_equal(output, expected_output)
 
     tensor = [[[0, 0, 0, 1, 0, 1, 0, 0, 0], [1, 0, 0, 1, 0, 0, 0, 0, 0]]]
     expectation = [[[0, 0, 0.1, 0.2, 0.3, 0.4, 0, 0, 0], [0.5, 0.6, 0.7, 0.8, 0, 0, 0, 0, 0]]]
-    output = np.array(generate_snapshot(tensor, expectation, snap_size=5))
-    # expected_output = np.array([36667, 47500, 22500])
-    assert output[1] == 36667
-    assert output[2] == 47500
-    assert output[3] == 22500
-    # assert np.array_equal(output, expected_output)
+    output = [round(snap, 3) for snap in generate_snapshot(tensor, expectation, snap_size=5)]
+    assert output[1] == 0.367
+    assert output[2] == 0.475
+    assert output[3] == 0.45
+
+    # EXPECTATION
+    tensors = np.array([
+        [[[0, 0, 0, 1, 1, 1],
+          [0, 0, 0, 0, 1, 1]],
+         [[1, 0, 1, 0, 0, 1],
+          [1, 0, 1, 0, 0, 1]]],
+
+        [[[1, 0, 1, 1, 1, 0],
+          [1, 0, 1, 0, 0, 0]],
+         [[0, 0, 1, 1, 0, 1],
+          [1, 1, 1, 1, 1, 0]]]
+    ])
+    scores = np.array([0.2, 0.4])
+    expected_output = np.array([
+        [[0.4, 0., 0.4, 0.3, 0.3, 0.2],
+         [0.4, 0., 0.4, 0., 0.2, 0.2]],
+        [[0.2, 0., 0.3, 0.4, 0., 0.3],
+         [0.3, 0.4, 0.3, 0.4, 0.4, 0.2]]
+    ])
+    output = generate_expectation(tensors, scores)
+    output = np.round(output, 1)
+    assert np.array_equal(output, expected_output)
 
 
 if __name__ == "__main__":

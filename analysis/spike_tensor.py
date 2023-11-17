@@ -30,7 +30,11 @@ def generate_snapshot(tensor, expectation, snap_size=SNAP_SIZE):
         start = idx - (snap_size // 2)
         for i in range(start, start + snap_size):  # Modify the range to start from `start`
             relative_idx = i - start
-            if 0 <= relative_idx < snap_size and 0 <= i < len(expectation[cf_idx][anf_idx]):
+            if (
+                0 <= relative_idx < snap_size
+                and 0 <= i < len(expectation[cf_idx][anf_idx])
+                and expectation[cf_idx][anf_idx][i] != 0
+            ):
                 snapshot[relative_idx].append(expectation[cf_idx][anf_idx][i])
 
     for cf_idx, cf in enumerate(tensor):
@@ -42,14 +46,36 @@ def generate_snapshot(tensor, expectation, snap_size=SNAP_SIZE):
     snapshot = [(sum(snap) / len(snap) if len(snap) > 0 else 0) for snap in snapshot]
     return snapshot
 
+# def generate_expectation(tensors, scores):
+
+#     # We want floating point type so can't use zeros_like
+#     expectation = np.zeros(np.shape(tensors[0]))
+
+#     for tensor, score in zip(tensors, scores):
+#         expectation += tensor * score
+
+#     # expectation = expectation / len(tensors)
+#     return expectation
+
 
 def generate_expectation(tensors, scores):
-
     # We want floating point type so can't use zeros_like
-    expectation = np.zeros(np.shape(tensors[0]))
+    expectation = np.zeros_like(tensors[0], dtype=float)
+    count_nonzero = np.zeros_like(expectation, dtype=int)
 
+    # Loop through each tensor and score
     for tensor, score in zip(tensors, scores):
-        expectation += tensor * score
+        # Element-wise multiply tensor with score
+        weighted_tensor = tensor * score
 
-    # expectation = expectation / len(tensors)
+        # Add to expectation
+        expectation += weighted_tensor
+
+        # Update count_nonzero for non-zero elements
+        count_nonzero += weighted_tensor != 0
+
+    # Element-wise division of expectation by count_nonzero,
+    # avoiding division by zero by using np.where to set those to 1
+    expectation = np.where(count_nonzero != 0, np.divide(expectation, count_nonzero), expectation)
+
     return expectation
