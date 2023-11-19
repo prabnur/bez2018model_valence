@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Samllest Time Step
-TAU = 1e-3  # 0.001 ms
+TAU = 1e-4  # 0.1 ms
 MAX = 0.25
 
 

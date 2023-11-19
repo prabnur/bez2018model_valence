@@ -53,9 +53,11 @@ def consonance_probabilities(ranks=CONS_RANK):
 
     # Normalize the values
     total = sum(inverse_values)
-    probabilities = [val/total for val in inverse_values]
+    return [val/total for val in inverse_values]
 
-    return probabilities
+
+def empirical_probabilities():
+    return consonance_probabilities()
 
 
 def consonance_scores(ranks=CONS_RANK, min_value=-1, max_value=1, adjust_to_zero=False):

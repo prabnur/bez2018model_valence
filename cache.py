@@ -46,11 +46,10 @@ def sharp_to_flat(sharp_note):
 
 
 def get_spikes(note, mode="regular", instrument="piano"):
-    if note[1] == "#":
-        note = sharp_to_flat(note[:2]) + note[2:]
-
     if mode == "regular":
-        return np.load(os.path.join(f"./spikes/{instrument}", f"{note}.npy"))
+        if note[1] == "#":
+            note = sharp_to_flat(note[:2]) + note[2:]
+        return np.load(os.path.join(os.path.join(SPIKES_DIR, instrument), f"{note}.npy"))
     elif mode == "rng":
         rng_path = os.path.join(SPIKES_DIR, instrument, "rng", note)
         return [

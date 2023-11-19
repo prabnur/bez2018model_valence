@@ -1,8 +1,58 @@
+from unittest import mock
 import numpy as np
+from analysis.probability.simple import generate_probabilities_simple
 from analysis.temporal import calc_avg_isi, get_avg_isi
 from analysis.spatial import count_spikes, count_spikes_optimized
 from analysis.spike_tensor import generate_snapshot, generate_spike_tensor, generate_expectation
 from analysis.musical import note_to_semitone, semitone_to_note
+
+from evaluate import predicted_consonance_scores, predicted_probabilities
+from testhelpers import array_equal
+
+
+def test_generate_probabilities_simple():
+    mockTensors = np.array([
+        [[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 1]]],
+        [[[0, 0, 0], [1, 0, 0]], [[0, 1, 0], [0, 0, 0]]],
+        [[[1, 1, 1], [0, 0, 0]], [[1, 0, 1], [1, 0, 0]]],
+        [[[0, 1, 0], [0, 1, 1]], [[0, 0, 1], [1, 1, 1]]],
+        [[[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [1, 1, 0]]],
+        [[[0, 1, 0], [1, 0, 0]], [[1, 0, 0], [1, 0, 1]]],
+        [[[0, 1, 0], [0, 1, 0]], [[1, 0, 1], [0, 0, 1]]],
+        [[[0, 0, 1], [1, 0, 1]], [[1, 0, 0], [0, 1, 1]]],
+        [[[0, 0, 1], [0, 1, 1]], [[1, 0, 1], [1, 1, 1]]],
+        [[[1, 1, 1], [0, 0, 1]], [[0, 1, 0], [1, 1, 0]]]
+    ])
+    output = generate_probabilities_simple("", mockTensors=mockTensors)
+    expected_output = np.array(
+        [[[.2, .6, .4], [.3, .3, .4]], [[.5, .3, .4], [.6, .5, .6]]]
+    )
+    array_equal(output, expected_output, roundFactor=1)
+
+
+def test_evaluate():
+    # predicted_consonance_scores
+    mock_tensor = np.array([
+        [[1, 1, 0], [0, 0, 1]],
+        [[0, 1, 0], [0, 1, 1]]
+    ])
+
+    probability_tensor = np.array([
+        [[.24, .01, .69], [.84, .38, .52]],
+        [[.11, .91, .36], [.28, .55, .77]]
+    ])
+
+    tensors = np.array([mock_tensor] * 12)
+
+    expected_output = np.array([0.5] * 12)
+    output = predicted_consonance_scores(probability_tensor, tensors, mock_tensor)
+    assert array_equal(output, expected_output, roundFactor=1)
+
+    # predicted_probabilities
+    scores = [0.9145, 0.1476, 0.6272, 0.4559]
+    expected_output = [0.43, 0.07, 0.29, 0.21]
+    assert array_equal(predicted_probabilities(scores), expected_output, roundFactor=2)
+    assert sum(predicted_probabilities(scores)) == 1
 
 
 def test_temporal_analyis():
@@ -77,10 +127,8 @@ def test_spike_tensor():
         [[0.7, 0.8, 0.9], [0.7, 0.3, 0]],
     ])
     expected_output = np.array([
-        [[1, 1, 1, 0, 0, 0.],
-         [0, 0, 0, 1, 1, 1.]],
-        [[0, 0, 0, 0, 0, 0.],
-         [0, 0, 1, 0, 0, 0.]]
+        [[1, 1, 1, 0, 0, 0.], [0, 0, 0, 1, 1, 1.]],
+        [[0, 0, 0, 0, 0, 0.], [0, 0, 1, 0, 0, 0.]]
     ])
     output = generate_spike_tensor(spikes, tau=0.1, duration=0.6)
     assert np.array_equal(output, expected_output)
@@ -88,19 +136,19 @@ def test_spike_tensor():
     # SNAPSHOT
     tensor = [[[0, 1, 0, 1], [1, 0, 0, 1]]]
     expectation = [[[0.1, 0.2, 0.3, 0.4], [0.5, 0.6, 0.7, 0.8]]]
-    output = np.array([round(snap, 3) for snap in generate_snapshot(tensor, expectation, snap_size=3)])
+    output = generate_snapshot(tensor, expectation, snap_size=3)
     expected_output = np.array([0.367, 0.475, 0.45])
-    assert np.array_equal(output, expected_output)
+    assert array_equal(output, expected_output, roundFactor=3)
 
     tensor = [[[0, 0, 0, 1, 0, 1, 0, 0, 0], [1, 0, 0, 1, 0, 0, 0, 0, 0]]]
     expectation = [[[0, 0, 0.1, 0.2, 0.3, 0.4, 0, 0, 0], [0.5, 0.6, 0.7, 0.8, 0, 0, 0, 0, 0]]]
-    output = np.array([round(snap, 3) for snap in generate_snapshot(tensor, expectation, snap_size=3)])
+    output = generate_snapshot(tensor, expectation, snap_size=3)
     expected_output = np.array([0.367, 0.475, 0.45])
-    assert np.array_equal(output, expected_output)
+    assert array_equal(output, expected_output, roundFactor=3)
 
     tensor = [[[0, 0, 0, 1, 0, 1, 0, 0, 0], [1, 0, 0, 1, 0, 0, 0, 0, 0]]]
     expectation = [[[0, 0, 0.1, 0.2, 0.3, 0.4, 0, 0, 0], [0.5, 0.6, 0.7, 0.8, 0, 0, 0, 0, 0]]]
-    output = [round(snap, 3) for snap in generate_snapshot(tensor, expectation, snap_size=5)]
+    output = np.round(generate_snapshot(tensor, expectation, snap_size=5), 3)
     assert output[1] == 0.367
     assert output[2] == 0.475
     assert output[3] == 0.45
@@ -125,8 +173,7 @@ def test_spike_tensor():
          [0.3, 0.4, 0.3, 0.4, 0.4, 0.2]]
     ])
     output = generate_expectation(tensors, scores)
-    output = np.round(output, 1)
-    assert np.array_equal(output, expected_output)
+    assert array_equal(output, expected_output, roundFactor=1)
 
 
 if __name__ == "__main__":
