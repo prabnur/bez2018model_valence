@@ -19,6 +19,22 @@ CONSONANCE_ORDER = [
     "m2",  # Minor 2nd
 ]
 
+ORDER_2 = [
+    # U
+    "O",  # Octave
+    "P5",  # Perfect 5th
+    "P4",  # Perfect 4th
+    "M3",  # Major 3rd
+    "m3",  # Minor 3rd
+    "M6",  # Major 6th
+    "m6",  # Minor 6th
+    "M2",  # Major 2nd
+    "m2",  # Minor 2nd
+    "M7",  # Major 7th
+    "m7",  # Minor 7th
+    "T",  # Augmented 4th / Diminished 5th / Tritone
+]
+
 # From Schwartz et al. 2003
 CONS_RANK = [2, 3, 4, 5, 5, 6, 7, 8, 9, 9, 11, 12]  # Same order as intervals above
 # Lower is more consonant
@@ -96,7 +112,7 @@ def consonance_scores(ranks=CONS_RANK, min_value=-1, max_value=1, adjust_to_zero
     return np.round(rescaled_values, 4)
 
 
-def consonance_ordered_notes(root_note):
+def consonance_ordered_notes(root_note, order=ORDER_2):
     """Return the consonance order of the notes in the scale of the given root note."""
     root_semitone = note_to_semitone(root_note)
 
@@ -121,4 +137,4 @@ def consonance_ordered_notes(root_note):
         new_semitone = root_semitone + semitone_interval
         intervals_map[interval] = semitone_to_note(new_semitone)
 
-    return [intervals_map[interval] for interval in CONSONANCE_ORDER]
+    return [intervals_map[interval] for interval in order]

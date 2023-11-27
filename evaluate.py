@@ -1,4 +1,5 @@
 from analysis.musical import consonance_ordered_notes, empirical_probabilities
+from analysis.pulse import TAU
 from analysis.spike_tensor import generate_spike_tensor
 from scipy.spatial.distance import jensenshannon
 
@@ -43,12 +44,12 @@ def js_divergence(P_predicted):
     return jensenshannon(P_predicted, P_empirical)
 
 
-def evaluate_single(probability_tensor, root_note="C4", debug=False):
+def evaluate_single(probability_tensor, tau=TAU, root_note="C4", debug=False):
     notes = consonance_ordered_notes(root_note)
     notes_spikes = [get_spikes(note) for note in notes]
-    consonance_ordered_tensors = [generate_spike_tensor(spikes) for spikes in notes_spikes]
+    consonance_ordered_tensors = [generate_spike_tensor(spikes, tau=tau) for spikes in notes_spikes]
 
-    root_tensor = generate_spike_tensor(get_spikes(root_note))
+    root_tensor = generate_spike_tensor(get_spikes(root_note), tau=tau)
 
     scores = predicted_consonance_scores(probability_tensor, consonance_ordered_tensors, root_tensor)
 

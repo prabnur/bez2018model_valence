@@ -1,6 +1,6 @@
 from unittest import mock
 import numpy as np
-from analysis.probability.simple import generate_probabilities_simple
+from analysis.probability import cumulative_average, generate_probabilities_simple, simple_posneg
 from analysis.temporal import calc_avg_isi, get_avg_isi
 from analysis.spatial import count_spikes, count_spikes_optimized
 from analysis.spike_tensor import generate_snapshot, generate_spike_tensor, generate_expectation
@@ -8,6 +8,66 @@ from analysis.musical import note_to_semitone, semitone_to_note
 
 from evaluate import predicted_consonance_scores, predicted_probabilities
 from testhelpers import array_equal
+
+
+def test_cumulative_reduction():
+    mockTensors = np.array([
+        [[[-1, -2, -3], [-1, -2, -3]], [[-1, 0, -1], [-1, -1, 0]]],
+        [[[-1, -2, -3], [1, 0, -1]], [[-1, 0, -1], [-1, -2, -3]]],
+        [[[1, 2, 3], [-1, -2, -3]], [[1, 0, 1], [1, 0, -1]]],
+        [[[-1, 0, -1], [-1, 0, 1]], [[-1, -2, -1], [1, 2, 3]]],
+        [[[-1, 0, -1], [-1, -2, -3]], [[-1, -2, -3], [1, 2, 1]]],
+        [[[-1, 0, -1], [1, 0, -1]], [[1, 0, -1], [1, 0, 0]]],
+        [[[-1, 0, -1], [-1, 0, -1]], [[1, 0, 1], [-1, -2, -1]]],
+        [[[-1, -2, -1], [1, 0, 1]], [[1, 0, -1], [-1, 0, 1]]],
+        [[[-1, -2, -1], [-1, 0, 1]], [[1, 0, 1], [1, 2, 3]]],
+        [[[1, 2, 3], [-1, -2, -1]], [[-1, 0, -1], [1, 2, 1]]]
+    ])
+    output = cumulative_average("", delta=1, mockTensors=mockTensors)
+    expected_output = np.array(
+        [[[-.6, -.4, -.6], [-.4, -.8, -1]], [[0, -.4, -.6], [.2, 0, .2]]]
+    )
+    array_equal(output, expected_output, roundFactor=1)
+
+
+def test_cumulative_average():
+    mockTensors = np.array([
+        [[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 1]]],
+        [[[0, 0, 0], [1, 0, 0]], [[0, 1, 0], [0, 0, 0]]],
+        [[[1, 1, 1], [0, 0, 0]], [[1, 0, 1], [1, 0, 0]]],
+        [[[0, 1, 0], [0, 1, 1]], [[0, 0, 1], [1, 1, 1]]],
+        [[[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [1, 1, 0]]],
+        [[[0, 1, 0], [1, 0, 0]], [[1, 0, 0], [1, 0, 1]]],
+        [[[0, 1, 0], [0, 1, 0]], [[1, 0, 1], [0, 0, 1]]],
+        [[[0, 0, 1], [1, 0, 1]], [[1, 0, 0], [0, 1, 1]]],
+        [[[0, 0, 1], [0, 1, 1]], [[1, 0, 1], [1, 1, 1]]],
+        [[[1, 1, 1], [0, 0, 1]], [[0, 1, 0], [1, 1, 0]]]
+    ])
+    output = cumulative_average("", delta=1, mockTensors=mockTensors)
+    expected_output = np.array(
+        [[[-.6, -.4, -.6], [-.4, -.8, -1]], [[0, -.4, -.6], [.2, .2, .4]]]
+    )
+    array_equal(output, expected_output, roundFactor=1)
+
+
+def test_simple_posneg():
+    mockTensors = np.array([
+        [[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 1]]],
+        [[[0, 0, 0], [1, 0, 0]], [[0, 1, 0], [0, 0, 0]]],
+        [[[1, 1, 1], [0, 0, 0]], [[1, 0, 1], [1, 0, 0]]],
+        [[[0, 1, 0], [0, 1, 1]], [[0, 0, 1], [1, 1, 1]]],
+        [[[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [1, 1, 0]]],
+        [[[0, 1, 0], [1, 0, 0]], [[1, 0, 0], [1, 0, 1]]],
+        [[[0, 1, 0], [0, 1, 0]], [[1, 0, 1], [0, 0, 1]]],
+        [[[0, 0, 1], [1, 0, 1]], [[1, 0, 0], [0, 1, 1]]],
+        [[[0, 0, 1], [0, 1, 1]], [[1, 0, 1], [1, 1, 1]]],
+        [[[1, 1, 1], [0, 0, 1]], [[0, 1, 0], [1, 1, 0]]]
+    ])
+    output = simple_posneg("", mockTensors=mockTensors)
+    expected_output = np.array(
+        [[[-.6, .2, -.2], [-.4, -.4, -.2]], [[0, -.4, -.2], [.2, 0, .2]]]
+    )
+    array_equal(output, expected_output, roundFactor=1)
 
 
 def test_generate_probabilities_simple():
