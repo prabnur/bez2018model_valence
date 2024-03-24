@@ -31,7 +31,7 @@ def plot_concurrency(conc_profiles, base=BASE):
 
 def fourier_note(note, shouldPlot=False):
     # Read the WAV file
-    sample_rate, read_data = wavfile.read(f'/Users/prab/Documents/Play/Iowa Notes/Mono/{note}.wav')
+    sample_rate, read_data = wavfile.read(f'/home/prab/Documents/notes/piano/{note}.wav')
 
     # Normalize the data
     read_data = read_data / np.max(np.abs(read_data))

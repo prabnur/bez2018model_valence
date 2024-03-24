@@ -1,8 +1,9 @@
 from model import generate_spikes_sync
 import numpy as np
 import os
+from cache import SPIKES_DIR
 
-TONE_SPIKES_DIR = "./spikes/tone"
+TONE_SPIKES_DIR = os.path.join(SPIKES_DIR, "tone")
 
 def generate_pure_tone(frequency, duration=0.25, sample_rate=44100):
     """
