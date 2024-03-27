@@ -112,7 +112,7 @@ def consonance_scores(ranks=CONS_RANK, min_value=-1, max_value=1, adjust_to_zero
     return np.round(rescaled_values, 4)
 
 
-def consonance_ordered_notes(root_note, order=ORDER_2):
+def consonance_ordered_notes(root_note, order=CONSONANCE_ORDER):
     """Return the consonance order of the notes in the scale of the given root note."""
     root_semitone = note_to_semitone(root_note)
 
